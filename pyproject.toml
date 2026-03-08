@@ -4,22 +4,28 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aiowhales"
-version = "0.1.0"
+version = "0.1.1"
 description = "Async-native Python library for interacting with Docker"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
 authors = [
-    { name = "Guy Sharir" },
+    { name = "Guy" },
 ]
 keywords = [
     "docker",
+    "docker-compose",
+    "compose",
+    "containers",
+    "container-management",
+    "docker-api",
     "async",
     "asyncio",
-    "containers",
-    "docker-api",
     "aiohttp",
     "devops",
+    "orchestration",
+    "microservices",
+    "infrastructure",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
