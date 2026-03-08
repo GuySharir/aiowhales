@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv run --python ${{ matrix.python-version }} pytest --tb=short -q
+      - run: uv run --python ${{ matrix.python-version }} pytest --tb=short -q --cov --cov-report=term-missing
 
   typecheck:
     runs-on: ubuntu-latest
