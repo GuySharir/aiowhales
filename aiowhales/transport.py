@@ -25,7 +25,7 @@ def _versioned(path: str) -> str:
     return f"/{API_VERSION}{path}"
 
 
-_NOT_FOUND_MAP: dict[str, type[DockerAPIError]] = {
+_NOT_FOUND_MAP: dict[str, type] = {
     "/containers/": ContainerNotFound,
     "/images/": ImageNotFound,
     "/volumes/": VolumeNotFound,
@@ -36,7 +36,8 @@ _NOT_FOUND_MAP: dict[str, type[DockerAPIError]] = {
 def _not_found_exception(path: str, message: str) -> DockerAPIError:
     for prefix, exc_cls in _NOT_FOUND_MAP.items():
         if prefix in path:
-            return exc_cls(message)
+            exc: DockerAPIError = exc_cls(message)
+            return exc
     return DockerAPIError(404, message)
 
 

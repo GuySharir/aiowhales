@@ -107,7 +107,8 @@ class TestImagesPull:
         images_api, transport = api
         progress_data = [
             json.dumps({"status": "Pulling from library/nginx", "id": "latest"}).encode() + b"\n",
-            json.dumps({"status": "Downloading", "id": "abc123", "progress": "50%"}).encode() + b"\n",
+            json.dumps({"status": "Downloading", "id": "abc123", "progress": "50%"}).encode()
+            + b"\n",
             json.dumps({"status": "Pull complete", "id": "abc123"}).encode() + b"\n",
         ]
         transport.register_stream("POST", "/images/create", progress_data)

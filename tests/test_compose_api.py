@@ -1,9 +1,7 @@
 """Tests for ComposeAPI."""
 
-import asyncio
 import json
-import sys
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -49,7 +47,7 @@ class FakeStreamReader:
         try:
             return next(self._lines)
         except StopIteration:
-            raise StopAsyncIteration
+            raise StopAsyncIteration from None
 
 
 @pytest.fixture
@@ -149,10 +147,14 @@ class TestComposeDown:
 class TestComposePs:
     @pytest.mark.asyncio
     async def test_ps_parses_services(self, compose):
-        output = "\n".join([
-            json.dumps({"Service": "web", "State": "running", "ID": "abc", "Image": "nginx"}),
-            json.dumps({"Service": "db", "State": "running", "ID": "def", "Image": "postgres"}),
-        ])
+        output = "\n".join(
+            [
+                json.dumps({"Service": "web", "State": "running", "ID": "abc", "Image": "nginx"}),
+                json.dumps(
+                    {"Service": "db", "State": "running", "ID": "def", "Image": "postgres"}
+                ),
+            ]
+        )
         with patch("asyncio.create_subprocess_exec", new_callable=AsyncMock) as mock_exec:
             mock_exec.return_value = FakeProcess(0, stdout=output.encode())
             result = await compose.ps("/app")
@@ -190,7 +192,7 @@ class TestComposeRun:
     async def test_run_with_list_command(self, compose):
         with patch("asyncio.create_subprocess_exec", new_callable=AsyncMock) as mock_exec:
             mock_exec.return_value = FakeProcess(0, stdout=b"result")
-            result = await compose.run("/app", "web", ["python", "-c", "print(1)"])
+            await compose.run("/app", "web", ["python", "-c", "print(1)"])
             args = mock_exec.call_args[0]
             assert "python" in args
             assert "-c" in args

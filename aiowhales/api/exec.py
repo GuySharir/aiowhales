@@ -38,7 +38,7 @@ class ExecAPI:
         if workdir:
             body["WorkingDir"] = workdir
         data = await self._transport.post(f"/containers/{container_id}/exec", body)
-        return data.get("Id", "")
+        return str(data.get("Id", ""))
 
     async def start(self, exec_id: str, *, detach: bool = False, tty: bool = False) -> str:
         """Start an exec instance and return its output."""
@@ -48,7 +48,8 @@ class ExecAPI:
 
     async def inspect(self, exec_id: str) -> dict[str, Any]:
         """Inspect an exec instance."""
-        return await self._transport.get(f"/exec/{exec_id}/json")
+        result: dict[str, Any] = await self._transport.get(f"/exec/{exec_id}/json")
+        return result
 
     async def run(self, container_id: str, cmd: list[str], **kwargs: Any) -> ExecResult:
         """Create, start, and inspect an exec — convenience method."""

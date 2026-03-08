@@ -111,9 +111,11 @@ class TestNetworksPrune:
     @pytest.mark.asyncio
     async def test_prune(self, api):
         networks_api, transport = api
-        transport.register("POST", "/networks/prune", {
-            "NetworksDeleted": [{"Name": "orphan1"}, {"Id": "orphan2"}]
-        })
+        transport.register(
+            "POST",
+            "/networks/prune",
+            {"NetworksDeleted": [{"Name": "orphan1"}, {"Id": "orphan2"}]},
+        )
         result = await networks_api.prune()
         assert "orphan1" in result
         assert "orphan2" in result

@@ -4,14 +4,14 @@ from datetime import datetime
 
 import pytest
 
-from aiowhales.models.container import Container, _parse_container
-from aiowhales.models.events import DockerEvent, _parse_event
-from aiowhales.models.exec_result import ExecResult
-from aiowhales.models.image import BuildOutput, Image, PullProgress, PushProgress, _parse_image
-from aiowhales.models.network import Network, _parse_network
-from aiowhales.models.volume import Volume, _parse_volume
-from aiowhales.testing import MockTransport
 from aiowhales.api.containers import ContainersAPI
+from aiowhales.models.container import _parse_container
+from aiowhales.models.events import _parse_event
+from aiowhales.models.exec_result import ExecResult
+from aiowhales.models.image import BuildOutput, PullProgress, PushProgress, _parse_image
+from aiowhales.models.network import _parse_network
+from aiowhales.models.volume import _parse_volume
+from aiowhales.testing import MockTransport
 
 from .conftest import (
     CONTAINER_INSPECT_FIXTURE,
@@ -20,9 +20,7 @@ from .conftest import (
     IMAGE_INSPECT_FIXTURE,
     IMAGE_LIST_FIXTURE,
     NETWORK_INSPECT_FIXTURE,
-    NETWORK_LIST_FIXTURE,
     VOLUME_INSPECT_FIXTURE,
-    VOLUME_LIST_FIXTURE,
 )
 
 
@@ -104,16 +102,23 @@ class TestContainerParsing:
         assert c.name == "my-container"
 
     def test_parse_invalid_created_string(self):
-        data = {"Id": "x", "Name": "/test", "Created": "not-a-date",
-                "State": {"Status": "running"}, "Config": {"Image": "x", "Labels": {}, "Env": []},
-                "NetworkSettings": {"Ports": {}}}
+        data = {
+            "Id": "x",
+            "Name": "/test",
+            "Created": "not-a-date",
+            "State": {"Status": "running"},
+            "Config": {"Image": "x", "Labels": {}, "Env": []},
+            "NetworkSettings": {"Ports": {}},
+        }
         c = _parse_container(data, _make_api())
         assert c.created == datetime.min
 
     def test_parse_env_without_equals(self):
         """Env entries without '=' should be skipped."""
         data = {
-            "Id": "x", "Name": "/test", "Created": "2024-01-01T00:00:00Z",
+            "Id": "x",
+            "Name": "/test",
+            "Created": "2024-01-01T00:00:00Z",
             "State": {"Status": "running"},
             "Config": {"Image": "x", "Labels": {}, "Env": ["NOEQUALS", "KEY=value"]},
             "NetworkSettings": {"Ports": {}},
@@ -122,8 +127,15 @@ class TestContainerParsing:
         assert c.env == {"KEY": "value"}
 
     def test_parse_null_labels(self):
-        data = {"Id": "x", "Names": ["/t"], "Image": "x", "State": "running",
-                "Created": 0, "Labels": None, "Ports": []}
+        data = {
+            "Id": "x",
+            "Names": ["/t"],
+            "Image": "x",
+            "State": "running",
+            "Created": 0,
+            "Labels": None,
+            "Ports": [],
+        }
         c = _parse_container(data, _make_api())
         assert c.labels == {}
 
@@ -256,6 +268,7 @@ class TestNetworkParsing:
 class TestEventParsing:
     def test_parse_event(self):
         from .conftest import EVENT_FIXTURE
+
         e = _parse_event(EVENT_FIXTURE)
         assert e.type == "container"
         assert e.action == "start"
@@ -264,17 +277,20 @@ class TestEventParsing:
 
     def test_parse_event_time(self):
         from .conftest import EVENT_FIXTURE
+
         e = _parse_event(EVENT_FIXTURE)
         assert isinstance(e.time, datetime)
 
     def test_event_is_frozen(self):
         from .conftest import EVENT_FIXTURE
+
         e = _parse_event(EVENT_FIXTURE)
         with pytest.raises(AttributeError):
             e.action = "stop"
 
     def test_event_raw_preserved(self):
         from .conftest import EVENT_FIXTURE
+
         e = _parse_event(EVENT_FIXTURE)
         assert e.raw == EVENT_FIXTURE
 

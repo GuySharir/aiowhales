@@ -112,7 +112,7 @@ class TestDemuxLogStream:
 
     @pytest.mark.asyncio
     async def test_utf8_content(self):
-        frame = _make_docker_frame(1, "héllo wörld 🐳\n".encode("utf-8"))
+        frame = _make_docker_frame(1, "héllo wörld 🐳\n".encode())
         lines = [line async for line in demux_log_stream(_async_iter([frame]))]
         assert lines[0].text == "héllo wörld 🐳"
 
@@ -174,7 +174,7 @@ class TestDecodeStream:
 
     @pytest.mark.asyncio
     async def test_utf8_decoding(self):
-        lines = [line async for line in decode_stream(_async_iter(["café\n".encode("utf-8")]))]
+        lines = [line async for line in decode_stream(_async_iter(["café\n".encode()]))]
         assert lines == ["café"]
 
 

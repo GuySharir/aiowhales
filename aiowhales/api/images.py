@@ -76,7 +76,7 @@ class ImagesAPI:
         context: str,
         *,
         dockerfile: str = "Dockerfile",
-        tags: list[str] | None = None,
+        tags: list[str] | None = None,  # type: ignore[valid-type]
         **kwargs: Any,
     ) -> AsyncIterator[BuildOutput]:
         import io
@@ -88,7 +88,7 @@ class ImagesAPI:
         buf.seek(0)
 
         params: dict[str, Any] = {"dockerfile": dockerfile}
-        if tags:
+        if tags is not None and len(tags) > 0:
             params["t"] = tags[0]
 
         raw = self._transport.stream("POST", "/build", **params)

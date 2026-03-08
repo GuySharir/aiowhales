@@ -201,12 +201,27 @@ class TestMultipleClients:
         """Multiple clients with different transports coexist."""
         t1 = MockTransport()
         t2 = MockTransport()
-        t1.register("GET", "/containers/json", [{"Id": "local1", "Names": ["/l"], "Image": "x", "State": "running", "Created": 0, "Labels": {}, "Ports": []}])
-        t2.register("GET", "/containers/json", [{"Id": "remote1", "Names": ["/r"], "Image": "y", "State": "running", "Created": 0, "Labels": {}, "Ports": []}])
+        ctr = {"State": "running", "Created": 0, "Labels": {}, "Ports": []}
+        t1.register(
+            "GET",
+            "/containers/json",
+            [
+                {"Id": "local1", "Names": ["/l"], "Image": "x", **ctr},
+            ],
+        )
+        t2.register(
+            "GET",
+            "/containers/json",
+            [
+                {"Id": "remote1", "Names": ["/r"], "Image": "y", **ctr},
+            ],
+        )
 
-        async with AsyncDockerClient(transport=t1) as local:
-            async with AsyncDockerClient(transport=t2) as remote:
-                local_containers = await local.containers.list()
-                remote_containers = await remote.containers.list()
-                assert local_containers[0].id == "local1"
-                assert remote_containers[0].id == "remote1"
+        async with (
+            AsyncDockerClient(transport=t1) as local,
+            AsyncDockerClient(transport=t2) as remote,
+        ):
+            local_containers = await local.containers.list()
+            remote_containers = await remote.containers.list()
+            assert local_containers[0].id == "local1"
+            assert remote_containers[0].id == "remote1"

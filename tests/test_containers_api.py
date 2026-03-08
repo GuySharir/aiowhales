@@ -11,7 +11,6 @@ from aiowhales.testing import MockTransport
 from .conftest import (
     CONTAINER_INSPECT_FIXTURE,
     CONTAINER_LIST_FIXTURE,
-    CONTAINER_STOPPED_FIXTURE,
     STATS_FIXTURE,
 )
 
@@ -95,12 +94,18 @@ class TestContainersCreate:
     async def test_create_basic(self, api):
         containers_api, transport = api
         transport.register("POST", "/containers/create", {"Id": "new123"})
-        transport.register("GET", "/containers/new123/json", {
-            "Id": "new123", "Name": "/my-container", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "created"},
-            "Config": {"Image": "alpine", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
+        transport.register(
+            "GET",
+            "/containers/new123/json",
+            {
+                "Id": "new123",
+                "Name": "/my-container",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "created"},
+                "Config": {"Image": "alpine", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
         c = await containers_api.create("alpine")
         assert c.id == "new123"
 
@@ -108,13 +113,19 @@ class TestContainersCreate:
     async def test_create_with_name(self, api):
         containers_api, transport = api
         transport.register("POST", "/containers/create", {"Id": "new123"})
-        transport.register("GET", "/containers/new123/json", {
-            "Id": "new123", "Name": "/test", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "created"},
-            "Config": {"Image": "alpine", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
-        c = await containers_api.create("alpine", name="test")
+        transport.register(
+            "GET",
+            "/containers/new123/json",
+            {
+                "Id": "new123",
+                "Name": "/test",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "created"},
+                "Config": {"Image": "alpine", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
+        await containers_api.create("alpine", name="test")
         # Verify name param was passed
         create_call = transport.calls[0]
         assert create_call[2].get("name") == "test"
@@ -123,24 +134,36 @@ class TestContainersCreate:
     async def test_create_with_command_list(self, api):
         containers_api, transport = api
         transport.register("POST", "/containers/create", {"Id": "new123"})
-        transport.register("GET", "/containers/new123/json", {
-            "Id": "new123", "Name": "/t", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "created"},
-            "Config": {"Image": "alpine", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
+        transport.register(
+            "GET",
+            "/containers/new123/json",
+            {
+                "Id": "new123",
+                "Name": "/t",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "created"},
+                "Config": {"Image": "alpine", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
         await containers_api.create("alpine", command=["echo", "hello"])
 
     @pytest.mark.asyncio
     async def test_create_with_command_string(self, api):
         containers_api, transport = api
         transport.register("POST", "/containers/create", {"Id": "new123"})
-        transport.register("GET", "/containers/new123/json", {
-            "Id": "new123", "Name": "/t", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "created"},
-            "Config": {"Image": "alpine", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
+        transport.register(
+            "GET",
+            "/containers/new123/json",
+            {
+                "Id": "new123",
+                "Name": "/t",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "created"},
+                "Config": {"Image": "alpine", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
         await containers_api.create("alpine", command="echo hello")
 
 
@@ -150,12 +173,18 @@ class TestContainersRun:
         containers_api, transport = api
         transport.register("POST", "/containers/create", {"Id": "run123"})
         transport.register("POST", "/containers/run123/start", {})
-        transport.register("GET", "/containers/run123/json", {
-            "Id": "run123", "Name": "/runner", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "running"},
-            "Config": {"Image": "nginx", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
+        transport.register(
+            "GET",
+            "/containers/run123/json",
+            {
+                "Id": "run123",
+                "Name": "/runner",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "running"},
+                "Config": {"Image": "nginx", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
         c = await containers_api.run("nginx", name="runner")
         assert c.id == "run123"
 
@@ -165,12 +194,18 @@ class TestContainersRun:
         transport.register("POST", "/containers/create", {"Id": "run123"})
         transport.register("POST", "/containers/run123/start", {})
         transport.register("POST", "/containers/run123/wait", {"StatusCode": 0})
-        transport.register("GET", "/containers/run123/json", {
-            "Id": "run123", "Name": "/runner", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "exited"},
-            "Config": {"Image": "alpine", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
+        transport.register(
+            "GET",
+            "/containers/run123/json",
+            {
+                "Id": "run123",
+                "Name": "/runner",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "exited"},
+                "Config": {"Image": "alpine", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
         c = await containers_api.run("alpine", command=["echo", "hi"], detach=False)
         assert c.id == "run123"
 
@@ -179,12 +214,18 @@ class TestContainersRun:
         containers_api, transport = api
         transport.register("POST", "/containers/create", {"Id": "ctx123"})
         transport.register("POST", "/containers/ctx123/start", {})
-        transport.register("GET", "/containers/ctx123/json", {
-            "Id": "ctx123", "Name": "/ctx", "Created": "2024-01-01T00:00:00Z",
-            "State": {"Status": "running"},
-            "Config": {"Image": "alpine", "Labels": {}, "Env": []},
-            "NetworkSettings": {"Ports": {}},
-        })
+        transport.register(
+            "GET",
+            "/containers/ctx123/json",
+            {
+                "Id": "ctx123",
+                "Name": "/ctx",
+                "Created": "2024-01-01T00:00:00Z",
+                "State": {"Status": "running"},
+                "Config": {"Image": "alpine", "Labels": {}, "Env": []},
+                "NetworkSettings": {"Ports": {}},
+            },
+        )
         transport.register("POST", "/containers/ctx123/stop", {})
 
         c = await containers_api.run("alpine", remove_on_exit=True)
@@ -293,7 +334,7 @@ class TestContainerStats:
         transport.register("GET", "/containers/abc/stats", STATS_FIXTURE)
         stats = await containers_api.stats("abc")
         assert stats.network_rx_bytes == 1280000  # 1024000 + 256000
-        assert stats.network_tx_bytes == 640000   # 512000 + 128000
+        assert stats.network_tx_bytes == 640000  # 512000 + 128000
 
     @pytest.mark.asyncio
     async def test_stats_pids(self, api):
@@ -315,7 +356,11 @@ class TestParseStats:
     def test_zero_system_delta(self):
         """CPU percent should be 0 when there's no system delta."""
         data = {
-            "cpu_stats": {"cpu_usage": {"total_usage": 100}, "system_cpu_usage": 500, "online_cpus": 1},
+            "cpu_stats": {
+                "cpu_usage": {"total_usage": 100},
+                "system_cpu_usage": 500,
+                "online_cpus": 1,
+            },
             "precpu_stats": {"cpu_usage": {"total_usage": 50}, "system_cpu_usage": 500},
             "memory_stats": {"usage": 0, "limit": 1},
         }

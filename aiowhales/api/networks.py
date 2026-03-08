@@ -48,7 +48,7 @@ class NetworksAPI:
         body = {"Container": container_id}
         await self._transport.post(f"/networks/{network_id}/disconnect", body)
 
-    async def prune(self) -> list[str]:
+    async def prune(self) -> list[str]:  # type: ignore[valid-type]
         data = await self._transport.post("/networks/prune")
         deleted = data.get("NetworksDeleted")
         if not isinstance(deleted, list):
