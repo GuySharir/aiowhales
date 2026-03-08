@@ -3,7 +3,7 @@
 from .container import Container, ContainerStats
 from .events import DockerEvent
 from .exec_result import ExecResult
-from .image import Image, PullProgress, PushProgress, BuildOutput
+from .image import BuildOutput, Image, PullProgress, PushProgress
 from .network import Network
 from .volume import Volume
 

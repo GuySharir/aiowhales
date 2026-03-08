@@ -9,10 +9,8 @@ from typing import Any, Protocol, runtime_checkable
 import aiohttp
 
 from .exceptions import (
-    ContainerNotFound,
     ConflictError,
-    DaemonConnectionRefused,
-    DaemonNotRunning,
+    ContainerNotFound,
     DockerAPIError,
     ImageNotFound,
     NetworkNotFound,
@@ -57,7 +55,13 @@ async def _check_response(resp: aiohttp.ClientResponse, path: str) -> None:
 class AbstractTransport(Protocol):
     async def get(self, path: str, **params: Any) -> Any: ...
     async def post(self, path: str, body: dict[str, Any] | None = None, **params: Any) -> Any: ...
-    async def post_raw(self, path: str, data: Any = None, headers: dict[str, str] | None = None, **params: Any) -> Any: ...
+    async def post_raw(
+        self,
+        path: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **params: Any,
+    ) -> Any: ...
     async def delete(self, path: str, **params: Any) -> None: ...
     async def stream(self, method: str, path: str, **params: Any) -> AsyncIterator[bytes]: ...
     async def aclose(self) -> None: ...
@@ -93,10 +97,21 @@ class _BaseHTTPTransport:
         except aiohttp.ClientConnectorError as exc:
             raise TransportError(str(exc)) from exc
 
-    async def post_raw(self, path: str, data: Any = None, headers: dict[str, str] | None = None, **params: Any) -> Any:
+    async def post_raw(
+        self,
+        path: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **params: Any,
+    ) -> Any:
         url = _versioned(path)
         try:
-            async with self._session.post(url, data=data, headers=headers, params=params or None) as resp:
+            async with self._session.post(
+                url,
+                data=data,
+                headers=headers,
+                params=params or None,
+            ) as resp:
                 await _check_response(resp, path)
                 text = await resp.text()
                 if not text:

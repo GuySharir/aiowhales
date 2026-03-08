@@ -91,7 +91,6 @@ class ImagesAPI:
         if tags:
             params["t"] = tags[0]
 
-        headers = {"Content-Type": "application/x-tar"}
         raw = self._transport.stream("POST", "/build", **params)
         async for item in json_stream(raw):
             yield BuildOutput(

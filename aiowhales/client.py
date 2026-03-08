@@ -90,6 +90,6 @@ def from_env() -> AsyncDockerClient:
     """
     host = os.environ.get("DOCKER_HOST", "unix:///var/run/docker.sock")
     if host.startswith("unix://"):
-        socket_path = host[len("unix://"):]
+        socket_path = host[len("unix://") :]
         return AsyncDockerClient(socket_path)
     return AsyncDockerClient(host)
