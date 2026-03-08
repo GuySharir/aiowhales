@@ -41,6 +41,6 @@ class VolumesAPI:
             params["force"] = "true"
         await self._transport.delete(f"/volumes/{name}", **params)
 
-    async def prune(self) -> list[str]:
+    async def prune(self) -> list[str]:  # type: ignore[valid-type]
         data = await self._transport.post("/volumes/prune")
         return data.get("VolumesDeleted") or []

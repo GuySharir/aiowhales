@@ -69,10 +69,6 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 
-[[tool.mypy.overrides]]
-module = "aiowhales.api.*"
-disable_error_code = ["valid-type"]
-
 [tool.ruff]
 target-version = "py311"
 line-length = 99

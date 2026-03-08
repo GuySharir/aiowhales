@@ -72,7 +72,7 @@ class ContainersAPI:
     async def run(
         self,
         image: str,
-        command: list[str] | str | None = None,
+        command: list[str] | str | None = None,  # type: ignore[valid-type]
         *,
         name: str | None = None,
         env: dict[str, str] | None = None,
@@ -157,7 +157,7 @@ class ContainersAPI:
         async for data in json_stream(raw_stream):
             yield _parse_stats(data)
 
-    async def exec_run(self, container_id: str, cmd: list[str]) -> ExecResult:
+    async def exec_run(self, container_id: str, cmd: list[str]) -> ExecResult:  # type: ignore[valid-type]
         """Create and start an exec instance, returning the result."""
         exec_body = {
             "AttachStdout": True,

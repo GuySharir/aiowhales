@@ -76,7 +76,7 @@ class ImagesAPI:
         context: str,
         *,
         dockerfile: str = "Dockerfile",
-        tags: list[str] | None = None,
+        tags: list[str] | None = None,  # type: ignore[valid-type]
         **kwargs: Any,
     ) -> AsyncIterator[BuildOutput]:
         import io
