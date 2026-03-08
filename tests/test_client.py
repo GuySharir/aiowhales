@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 from datetime import datetime
 from unittest.mock import patch
 
@@ -23,12 +24,21 @@ from .conftest import EVENT_FIXTURE
 
 class TestClientInit:
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not available")
     async def test_default_transport_is_unix_socket(self):
         client = AsyncDockerClient()
         assert isinstance(client._transport, UnixSocketTransport)
         await client.aclose()
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows-only test")
+    async def test_default_transport_is_tcp_on_windows(self):
+        client = AsyncDockerClient()
+        assert isinstance(client._transport, TCPTransport)
+        await client.aclose()
+
+    @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not available")
     async def test_unix_socket_path(self):
         client = AsyncDockerClient("/run/user/1000/docker.sock")
         assert isinstance(client._transport, UnixSocketTransport)
@@ -105,6 +115,7 @@ class TestClientAlias:
 
 class TestFromEnv:
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not available")
     async def test_default_unix_socket(self):
         with patch.dict(os.environ, {}, clear=True):
             os.environ.pop("DOCKER_HOST", None)
@@ -113,6 +124,16 @@ class TestFromEnv:
             await client.aclose()
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows-only test")
+    async def test_default_tcp_on_windows(self):
+        with patch.dict(os.environ, {}, clear=True):
+            os.environ.pop("DOCKER_HOST", None)
+            client = from_env()
+            assert isinstance(client._transport, TCPTransport)
+            await client.aclose()
+
+    @pytest.mark.asyncio
+    @pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not available")
     async def test_custom_docker_host_unix(self):
         with patch.dict(os.environ, {"DOCKER_HOST": "unix:///run/user/1000/docker.sock"}):
             client = from_env()

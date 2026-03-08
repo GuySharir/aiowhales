@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -14,6 +15,9 @@ from aiowhales.exceptions import (
     TransportError,
 )
 from aiowhales.transport import _check_response
+
+# UnixSocketTransport tests require Unix sockets (Linux/macOS)
+unix_only = pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not available")
 
 # -- helpers ------------------------------------------------------------------
 
@@ -63,6 +67,7 @@ class TestCheckResponse:
 # -- _BaseHTTPTransport via UnixSocketTransport (real session, mocked HTTP) ---
 
 
+@unix_only
 class TestBaseHTTPTransportGet:
     @pytest.mark.asyncio
     async def test_get_json_response(self):
@@ -116,6 +121,7 @@ class TestBaseHTTPTransportGet:
         await transport.aclose()
 
 
+@unix_only
 class TestBaseHTTPTransportPost:
     @pytest.mark.asyncio
     async def test_post_json_response(self):
@@ -184,6 +190,7 @@ class TestBaseHTTPTransportPost:
         await transport.aclose()
 
 
+@unix_only
 class TestBaseHTTPTransportPostRaw:
     @pytest.mark.asyncio
     async def test_post_raw_json_response(self):
@@ -252,6 +259,7 @@ class TestBaseHTTPTransportPostRaw:
         await transport.aclose()
 
 
+@unix_only
 class TestBaseHTTPTransportDelete:
     @pytest.mark.asyncio
     async def test_delete_success(self):
@@ -287,6 +295,7 @@ class TestBaseHTTPTransportDelete:
         await transport.aclose()
 
 
+@unix_only
 class TestBaseHTTPTransportStream:
     @pytest.mark.asyncio
     async def test_stream_yields_chunks(self):
@@ -364,6 +373,7 @@ class TestBaseHTTPTransportStream:
         await transport.aclose()
 
 
+@unix_only
 class TestBaseHTTPTransportAclose:
     @pytest.mark.asyncio
     async def test_aclose_closes_session(self):
