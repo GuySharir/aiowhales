@@ -4,34 +4,28 @@ Thanks for your interest in contributing!
 
 ## Development Setup
 
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+
 ```bash
 # Clone the repo
 git clone https://github.com/GuySharir/aiowhales.git
 cd aiowhales
 
-# Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate
-
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
-
-# Install pre-commit hooks
-pip install pre-commit
-pre-commit install
+# Install dependencies (creates .venv automatically)
+uv sync
 ```
 
 ## Running Tests
 
 ```bash
 # Run all unit tests
-pytest
+uv run pytest
 
 # Run with verbose output
-pytest -v
+uv run pytest -v
 
 # Run a specific test file
-pytest tests/test_containers_api.py
+uv run pytest tests/test_containers_api.py
 ```
 
 All tests use `MockTransport` and do **not** require a running Docker daemon.
@@ -42,19 +36,19 @@ This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formattin
 
 ```bash
 # Check for issues
-ruff check .
+uv run ruff check .
 
 # Auto-fix
-ruff check --fix .
+uv run ruff check --fix .
 
 # Format
-ruff format .
+uv run ruff format .
 ```
 
 ## Type Checking
 
 ```bash
-mypy aiowhales --ignore-missing-imports
+uv run mypy aiowhales --ignore-missing-imports
 ```
 
 ## Submitting Changes

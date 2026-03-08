@@ -21,6 +21,12 @@ Async-native Python library for interacting with Docker. Built on `aiohttp` and 
 ## Installation
 
 ```bash
+uv add aiowhales
+```
+
+Or with pip:
+
+```bash
 pip install aiowhales
 ```
 
