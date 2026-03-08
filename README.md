@@ -1,4 +1,10 @@
-# aiowhales
+<div align="center">
+
+# 🐳 aiowhales
+
+**The async Docker client for Python.**
+
+Talk to Docker the way Python was meant to — with `async` and `await`.
 
 [![CI](https://github.com/GuySharir/aiowhales/actions/workflows/ci.yml/badge.svg)](https://github.com/GuySharir/aiowhales/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/aiowhales.svg)](https://pypi.org/project/aiowhales/)
@@ -6,28 +12,41 @@
 [![Downloads](https://img.shields.io/pypi/dm/aiowhales.svg)](https://pypi.org/project/aiowhales/)
 [![License](https://img.shields.io/pypi/l/aiowhales.svg)](https://github.com/GuySharir/aiowhales/blob/main/LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Coverage](https://img.shields.io/badge/coverage-%E2%89%A590%25-brightgreen)](https://github.com/GuySharir/aiowhales)
+[![Typed](https://img.shields.io/badge/typed-mypy-blue)](https://github.com/GuySharir/aiowhales)
 
-Async-native Python library for interacting with Docker. Built on `aiohttp` and `asyncio`, `aiowhales` talks directly to the Docker Engine API over Unix sockets or TCP — no subprocess shells, no sync wrappers.
+</div>
 
-## Features
+---
 
-- **Fully async** — every operation is a native coroutine
-- **Direct Docker API** — communicates over the Docker Engine REST API (Unix socket or TCP)
-- **Typed models** — immutable dataclass snapshots for containers, images, volumes, networks
-- **Streaming** — first-class `async for` support for logs, stats, pull progress, build output, and events
-- **Compose** — async wrapper around `docker compose` CLI
-- **Testable** — injectable transport layer with a built-in `MockTransport` for unit testing
+Built on `aiohttp`, `aiowhales` talks directly to the Docker Engine API over Unix sockets or TCP. No subprocess shells. No sync wrappers. No blocking threads. Just pure async Python.
 
-## Installation
-
-```bash
-uv add aiowhales
+```python
+async with AsyncDockerClient() as docker:
+    container = await docker.containers.run("python:3.13-slim", "echo hello!", detach=True)
+    async for line in docker.containers.logs(container.id):
+        print(line)  # hello!
 ```
 
-Or with pip:
+## Why aiowhales?
+
+| | aiowhales | docker-py | subprocess |
+|---|---|---|---|
+| Async native | ✅ | ❌ | ❌ |
+| Direct API (no CLI) | ✅ | ✅ | ❌ |
+| Typed models | ✅ | ❌ | ❌ |
+| Streaming (`async for`) | ✅ | ❌ | ❌ |
+| Built-in test mocks | ✅ | ❌ | ❌ |
+| Cross-platform | ✅ | ✅ | ✅ |
+
+## Install
 
 ```bash
 pip install aiowhales
+```
+
+```bash
+uv add aiowhales
 ```
 
 ## Quick Start
@@ -38,7 +57,7 @@ from aiowhales import AsyncDockerClient
 
 async def main():
     async with AsyncDockerClient() as docker:
-        # Pull an image
+        # Pull an image with streaming progress
         async for progress in docker.images.pull("python:3.12-slim"):
             print(progress.status)
 
@@ -49,7 +68,7 @@ async def main():
             detach=True,
         )
 
-        # Wait and get logs
+        # Stream logs
         await docker.containers.wait(container.id)
         async for line in docker.containers.logs(container.id):
             print(line)
@@ -60,68 +79,60 @@ async def main():
 asyncio.run(main())
 ```
 
-## Connecting to Docker
+## Features
+
+### 🔌 Connecting
 
 ```python
 from aiowhales import AsyncDockerClient, from_env
 
-# Default — Unix socket at /var/run/docker.sock
-async with AsyncDockerClient() as docker:
-    ...
+# Unix socket (default on Linux/macOS)
+async with AsyncDockerClient() as docker: ...
 
-# Explicit Unix socket path
-async with AsyncDockerClient("/var/run/docker.sock") as docker:
-    ...
+# TCP (default on Windows, or remote hosts)
+async with AsyncDockerClient("tcp://192.168.1.100:2375") as docker: ...
 
-# TCP connection
-async with AsyncDockerClient("tcp://192.168.1.100:2375") as docker:
-    ...
-
-# From DOCKER_HOST environment variable
+# From DOCKER_HOST env var
 docker = from_env()
 ```
 
-## API Reference
-
-### Containers
+### 📦 Containers
 
 ```python
-# List all containers
+# List
 containers = await docker.containers.list(all=True)
 
-# Create and start
+# Run
 container = await docker.containers.run("nginx:latest", name="web", ports={"80/tcp": 8080})
 
 # Lifecycle
-await docker.containers.stop("container_id")
-await docker.containers.start("container_id")
-await docker.containers.restart("container_id")
-await docker.containers.pause("container_id")
-await docker.containers.unpause("container_id")
+await docker.containers.stop(container.id)
+await docker.containers.start(container.id)
+await docker.containers.restart(container.id)
 
 # Inspect
-container = await docker.containers.get("container_id")
-print(container.status, container.image)
+info = await docker.containers.get(container.id)
+print(info.status, info.image)
 
-# Execute a command
-result = await docker.containers.exec_run("container_id", ["ls", "-la"])
+# Exec into a running container
+result = await docker.containers.exec_run(container.id, ["ls", "-la"])
 
-# Stream logs
-async for line in docker.containers.logs("container_id", follow=True):
+# Stream logs in real time
+async for line in docker.containers.logs(container.id, follow=True):
     print(line)
 
-# Resource stats
-stats = await docker.containers.stats("container_id")
+# Live resource stats
+stats = await docker.containers.stats(container.id)
 print(f"CPU: {stats.cpu_percent}%  Memory: {stats.memory_usage}")
 
 # Remove
-await docker.containers.remove("container_id", force=True)
+await docker.containers.remove(container.id, force=True)
 ```
 
-### Images
+### 🖼️ Images
 
 ```python
-# List images
+# List
 images = await docker.images.list()
 
 # Pull with progress
@@ -141,7 +152,7 @@ async for progress in docker.images.push("registry.example.com/myapp:v1"):
 await docker.images.remove("myapp:latest")
 ```
 
-### Volumes
+### 💾 Volumes
 
 ```python
 volumes = await docker.volumes.list()
@@ -150,7 +161,7 @@ await docker.volumes.remove("my-data")
 pruned = await docker.volumes.prune()
 ```
 
-### Networks
+### 🌐 Networks
 
 ```python
 networks = await docker.networks.list()
@@ -160,63 +171,53 @@ await docker.networks.disconnect(net.id, container.id)
 await docker.networks.remove(net.id)
 ```
 
-### Exec
+### ⚡ Exec
 
 ```python
-# Run a command in a running container
-result = await docker.exec.run("container_id", ["echo", "hello"])
+# Run a command inside a container
+result = await docker.exec.run(container.id, ["echo", "hello"])
 print(result.exit_code, result.output)
 
-# Stream output line by line
-async for line in docker.exec.stream("container_id", ["tail", "-f", "/var/log/app.log"]):
+# Stream output
+async for line in docker.exec.stream(container.id, ["tail", "-f", "/var/log/app.log"]):
     print(line)
 ```
 
-### Compose
+### 🎼 Compose
 
 ```python
-# Start services
 await docker.compose.up("./my-project", detach=True, build=True)
-
-# List services
 services = await docker.compose.ps("./my-project")
 
-# View logs
 async for line in docker.compose.logs("./my-project", service="web", follow=True):
     print(line)
 
-# Stop and clean up
 await docker.compose.down("./my-project", volumes=True)
 ```
 
-### Events
+### 📡 Events
 
 ```python
-# Stream Docker engine events
 async for event in docker.events(filters={"type": ["container"]}):
     print(f"{event.action} {event.actor_id}")
 ```
 
 ## Testing
 
-aiowhales ships with a `MockTransport` for unit testing without a Docker daemon:
+aiowhales ships with `MockTransport` — test your Docker code without a running daemon:
 
 ```python
-import pytest
 from aiowhales import AsyncDockerClient
 from aiowhales.testing import MockTransport
 
-@pytest.fixture
-def docker():
-    transport = MockTransport()
-    transport.register("GET", "/containers/json", [
-        {"Id": "abc123", "Names": ["/myapp"], "State": "running", "Image": "nginx"}
-    ])
-    return AsyncDockerClient(transport=transport)
+transport = MockTransport()
+transport.register("GET", "/containers/json", [
+    {"Id": "abc123", "Names": ["/myapp"], "State": "running",
+     "Image": "nginx", "Created": 0, "Labels": {}, "Ports": []}
+])
 
-async def test_list_containers(docker):
+async with AsyncDockerClient(transport=transport) as docker:
     containers = await docker.containers.list()
-    assert len(containers) == 1
     assert containers[0].id == "abc123"
 ```
 
@@ -224,23 +225,31 @@ async def test_list_containers(docker):
 
 All models are **frozen dataclasses** — immutable snapshots of Docker state:
 
-| Model | Description |
+| Model | What it represents |
 |---|---|
-| `Container` | Container snapshot (id, name, status, image, ports, labels, ...) |
-| `Image` | Image snapshot (id, tags, size, created) |
-| `Volume` | Volume snapshot (name, driver, mountpoint, labels) |
-| `Network` | Network snapshot (id, name, driver, containers) |
-| `ContainerStats` | CPU/memory/network usage stats |
-| `ExecResult` | Command execution result (exit_code, output) |
-| `DockerEvent` | Engine event (action, type, actor_id, time) |
+| `Container` | Container state — id, name, status, image, ports, labels |
+| `Image` | Image metadata — id, tags, size, created |
+| `Volume` | Volume info — name, driver, mountpoint, labels |
+| `Network` | Network info — id, name, driver, connected containers |
+| `ContainerStats` | Live CPU / memory / network usage |
+| `ExecResult` | Command result — exit code + output |
+| `DockerEvent` | Engine event — action, type, actor, timestamp |
 | `PullProgress` / `PushProgress` | Image transfer progress |
 | `BuildOutput` | Build step output |
 
+## Platform Support
+
+| Platform | Transport | Status |
+|---|---|---|
+| Linux | Unix socket | ✅ Fully supported |
+| macOS | Unix socket | ✅ Fully supported |
+| Windows | TCP (Docker Desktop) | ✅ Fully supported |
+
 ## Requirements
 
-- Python 3.11+
-- aiohttp >= 3.9
-- Docker Engine API v1.43+
+- **Python** 3.11+
+- **aiohttp** >= 3.9
+- **Docker Engine API** v1.43+
 
 ## License
 
