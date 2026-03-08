@@ -1,8 +1,11 @@
 # aiowhales
 
+[![CI](https://github.com/GuySharir/aiowhales/actions/workflows/ci.yml/badge.svg)](https://github.com/GuySharir/aiowhales/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/aiowhales.svg)](https://pypi.org/project/aiowhales/)
 [![Python versions](https://img.shields.io/pypi/pyversions/aiowhales.svg)](https://pypi.org/project/aiowhales/)
+[![Downloads](https://img.shields.io/pypi/dm/aiowhales.svg)](https://pypi.org/project/aiowhales/)
 [![License](https://img.shields.io/pypi/l/aiowhales.svg)](https://github.com/GuySharir/aiowhales/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 Async-native Python library for interacting with Docker. Built on `aiohttp` and `asyncio`, `aiowhales` talks directly to the Docker Engine API over Unix sockets or TCP — no subprocess shells, no sync wrappers.
 
