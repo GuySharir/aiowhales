@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 from collections.abc import AsyncIterator
 from typing import Any
@@ -17,7 +18,9 @@ class ContainersAPI:
     def __init__(self, transport: Any) -> None:
         self._transport = transport
 
-    async def list(self, *, all: bool = False, filters: dict[str, Any] | None = None) -> list[Container]:
+    async def list(
+        self, *, all: bool = False, filters: dict[str, Any] | None = None
+    ) -> list[Container]:
         params: dict[str, Any] = {}
         if all:
             params["all"] = "true"
@@ -35,10 +38,7 @@ class ContainersAPI:
         if "command" in kwargs:
             cmd = kwargs.pop("command")
             body["Cmd"] = cmd if isinstance(cmd, list) else [cmd]
-        if "name" in kwargs:
-            name = kwargs.pop("name")
-        else:
-            name = None
+        name = kwargs.pop("name") if "name" in kwargs else None
         if "env" in kwargs:
             env = kwargs.pop("env")
             body["Env"] = [f"{k}={v}" for k, v in env.items()] if isinstance(env, dict) else env
@@ -51,7 +51,8 @@ class ContainersAPI:
             exposed = {}
             port_bindings = {}
             for container_port, host_port in ports.items():
-                key = f"{container_port}/tcp" if "/" not in str(container_port) else str(container_port)
+                port_str = str(container_port)
+                key = f"{container_port}/tcp" if "/" not in port_str else port_str
                 exposed[key] = {}
                 port_bindings[key] = [{"HostPort": str(host_port)}]
             body["ExposedPorts"] = exposed
@@ -135,7 +136,9 @@ class ContainersAPI:
         data = await self._transport.get(f"/containers/{id}/stats", stream="false")
         return _parse_stats(data)
 
-    async def logs(self, id: str, *, follow: bool = False, tail: int = 100) -> AsyncIterator[LogLine]:
+    async def logs(
+        self, id: str, *, follow: bool = False, tail: int = 100
+    ) -> AsyncIterator[LogLine]:
         params: dict[str, Any] = {
             "stdout": "true",
             "stderr": "true",
@@ -192,15 +195,11 @@ class _RunContextContainer(Container):
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         api: ContainersAPI = object.__getattribute__(self, "_containers_api")
         remove: bool = object.__getattribute__(self, "_remove_on_exit")
-        try:
+        with contextlib.suppress(Exception):
             await api.stop(self.id, timeout=5)
-        except Exception:
-            pass
         if remove:
-            try:
+            with contextlib.suppress(Exception):
                 await api.remove(self.id, force=True)
-            except Exception:
-                pass
 
 
 def _parse_stats(data: dict[str, Any]) -> ContainerStats:
@@ -209,7 +208,9 @@ def _parse_stats(data: dict[str, Any]) -> ContainerStats:
     precpu = data.get("precpu_stats", {})
     memory = data.get("memory_stats", {})
 
-    cpu_delta = cpu_stats.get("cpu_usage", {}).get("total_usage", 0) - precpu.get("cpu_usage", {}).get("total_usage", 0)
+    cur_usage = cpu_stats.get("cpu_usage", {}).get("total_usage", 0)
+    pre_usage = precpu.get("cpu_usage", {}).get("total_usage", 0)
+    cpu_delta = cur_usage - pre_usage
     system_delta = cpu_stats.get("system_cpu_usage", 0) - precpu.get("system_cpu_usage", 0)
     n_cpus = cpu_stats.get("online_cpus", 1)
     cpu_percent = (cpu_delta / system_delta * n_cpus * 100.0) if system_delta > 0 else 0.0

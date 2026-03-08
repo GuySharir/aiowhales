@@ -55,7 +55,13 @@ class MockTransport:
         self._calls.append(("POST", path, params))
         return self._find_response("POST", path)
 
-    async def post_raw(self, path: str, data: Any = None, headers: dict[str, str] | None = None, **params: Any) -> Any:
+    async def post_raw(
+        self,
+        path: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **params: Any,
+    ) -> Any:
         self._calls.append(("POST", path, params))
         return self._find_response("POST", path)
 

@@ -60,7 +60,6 @@ class ExecAPI:
     async def stream(self, container_id: str, cmd: list[str], **kwargs: Any) -> AsyncIterator[str]:
         """Create and start an exec, streaming output line by line."""
         exec_id = await self.create(container_id, cmd, **kwargs)
-        body = {"Detach": False, "Tty": False}
         raw = self._transport.stream("POST", f"/exec/{exec_id}/start")
         async for line in decode_stream(raw):
             yield line

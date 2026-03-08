@@ -50,4 +50,7 @@ class NetworksAPI:
 
     async def prune(self) -> list[str]:
         data = await self._transport.post("/networks/prune")
-        return [n.get("Name", n.get("Id", "")) for n in (data.get("NetworksDeleted") or [])] if isinstance(data.get("NetworksDeleted"), list) else []
+        deleted = data.get("NetworksDeleted")
+        if not isinstance(deleted, list):
+            return []
+        return [n.get("Name", n.get("Id", "")) for n in deleted]

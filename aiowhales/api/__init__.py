@@ -1,10 +1,10 @@
 """API modules for Docker Engine endpoints."""
 
+from .compose import ComposeAPI
 from .containers import ContainersAPI
 from .images import ImagesAPI
-from .volumes import VolumesAPI
 from .networks import NetworksAPI
-from .compose import ComposeAPI
+from .volumes import VolumesAPI
 
 __all__ = [
     "ComposeAPI",

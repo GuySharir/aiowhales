@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..api.containers import ContainersAPI
-    from .exec_result import ExecResult
     from ..stream import LogLine
+    from .exec_result import ExecResult
 
 
 @dataclass(frozen=True)
