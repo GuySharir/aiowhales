@@ -4,7 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    labels: ["dependencies"]
     commit-message:
       prefix: "deps"
 
@@ -12,6 +11,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    labels: ["dependencies"]
     commit-message:
       prefix: "ci"
