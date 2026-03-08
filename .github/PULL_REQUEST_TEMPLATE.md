@@ -1,12 +1,15 @@
-## What does this PR do?
+## Related issue
 
-<!-- A brief description of the change. -->
+<!-- Link to the issue, e.g. Closes #123. Leave blank if none. -->
 
-## Checklist
+## What changed
 
-- [ ] Tests added or updated
-- [ ] `uv run pytest` passes
-- [ ] `uv run ruff check .` passes
-- [ ] `uv run ruff format --check .` passes
-- [ ] `uv run mypy aiowhales` passes
-- [ ] Updated docs/README if applicable
+<!-- Brief description of what was added, removed, or modified. -->
+
+## Why
+
+<!-- Motivation or context behind the change. -->
+
+## Notes for reviewers
+
+<!-- Anything reviewers should pay extra attention to, or can ignore. -->
