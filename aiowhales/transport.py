@@ -64,7 +64,14 @@ class AbstractTransport(Protocol):
         **params: Any,
     ) -> Any: ...
     async def delete(self, path: str, **params: Any) -> None: ...
-    async def stream(self, method: str, path: str, **params: Any) -> AsyncIterator[bytes]: ...
+    async def stream(
+        self,
+        method: str,
+        path: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **params: Any,
+    ) -> AsyncIterator[bytes]: ...
     async def aclose(self) -> None: ...
 
 
@@ -131,11 +138,23 @@ class _BaseHTTPTransport:
         except aiohttp.ClientConnectorError as exc:
             raise TransportError(str(exc)) from exc
 
-    async def stream(self, method: str, path: str, **params: Any) -> AsyncIterator[bytes]:
+    async def stream(
+        self,
+        method: str,
+        path: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **params: Any,
+    ) -> AsyncIterator[bytes]:
         url = _versioned(path)
         try:
             meth = getattr(self._session, method.lower())
-            async with meth(url, params=params or None) as resp:
+            kwargs: dict[str, Any] = {"params": params or None}
+            if data is not None:
+                kwargs["data"] = data
+            if headers is not None:
+                kwargs["headers"] = headers
+            async with meth(url, **kwargs) as resp:
                 await _check_response(resp, path)
                 async for chunk in resp.content.iter_any():
                     yield chunk

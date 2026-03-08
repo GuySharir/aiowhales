@@ -5,7 +5,7 @@ import json
 import pytest
 
 from aiowhales.api.images import ImagesAPI
-from aiowhales.models.image import Image, PullProgress
+from aiowhales.models.image import BuildOutput, Image, PullProgress
 from aiowhales.testing import MockTransport
 
 from .conftest import IMAGE_INSPECT_FIXTURE, IMAGE_LIST_FIXTURE
@@ -132,4 +132,54 @@ class TestImagesPull:
         images_api, transport = api
         transport.register_stream("POST", "/images/create", [])
         items = [item async for item in images_api.pull("nginx")]
+        assert items == []
+
+
+class TestImagesBuild:
+    @pytest.mark.asyncio
+    async def test_build_yields_output(self, api, tmp_path):
+        images_api, transport = api
+        # Create a minimal context dir with a Dockerfile
+        dockerfile = tmp_path / "Dockerfile"
+        dockerfile.write_text("FROM scratch\n")
+        build_data = [
+            json.dumps({"stream": "Step 1/1 : FROM scratch"}).encode() + b"\n",
+            json.dumps({"stream": "Successfully built abc123"}).encode() + b"\n",
+        ]
+        transport.register_stream("POST", "/build", build_data)
+        items = [item async for item in images_api.build(str(tmp_path))]
+        assert len(items) == 2
+        assert all(isinstance(o, BuildOutput) for o in items)
+        assert "Step 1/1" in items[0].stream
+        assert "Successfully built" in items[1].stream
+
+    @pytest.mark.asyncio
+    async def test_build_with_tags(self, api, tmp_path):
+        images_api, transport = api
+        dockerfile = tmp_path / "Dockerfile"
+        dockerfile.write_text("FROM scratch\n")
+        transport.register_stream("POST", "/build", [])
+        _ = [item async for item in images_api.build(str(tmp_path), tags=["myapp:latest"])]
+        call = transport.calls[0]
+        assert call[2].get("t") == "myapp:latest"
+
+    @pytest.mark.asyncio
+    async def test_build_error_output(self, api, tmp_path):
+        images_api, transport = api
+        dockerfile = tmp_path / "Dockerfile"
+        dockerfile.write_text("FROM scratch\n")
+        build_data = [
+            json.dumps({"error": "something went wrong"}).encode() + b"\n",
+        ]
+        transport.register_stream("POST", "/build", build_data)
+        items = [item async for item in images_api.build(str(tmp_path))]
+        assert items[0].error == "something went wrong"
+
+    @pytest.mark.asyncio
+    async def test_build_empty_stream(self, api, tmp_path):
+        images_api, transport = api
+        dockerfile = tmp_path / "Dockerfile"
+        dockerfile.write_text("FROM scratch\n")
+        transport.register_stream("POST", "/build", [])
+        items = [item async for item in images_api.build(str(tmp_path))]
         assert items == []

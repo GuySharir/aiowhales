@@ -21,7 +21,7 @@ class Image:
 
     @property
     def short_id(self) -> str:
-        return self.id[:12] if self.id.startswith("sha256:") else self.id[:12]
+        return self.id[7:19] if self.id.startswith("sha256:") else self.id[:12]
 
 
 @dataclass(frozen=True)

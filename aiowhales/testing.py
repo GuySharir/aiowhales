@@ -68,7 +68,14 @@ class MockTransport:
     async def delete(self, path: str, **params: Any) -> None:
         self._calls.append(("DELETE", path, params))
 
-    async def stream(self, method: str, path: str, **params: Any) -> AsyncIterator[bytes]:
+    async def stream(
+        self,
+        method: str,
+        path: str,
+        data: Any = None,
+        headers: dict[str, str] | None = None,
+        **params: Any,
+    ) -> AsyncIterator[bytes]:
         self._calls.append((method.upper(), path, params))
         key = (method.upper(), path)
         chunks = self._stream_responses.get(key, [])

@@ -91,7 +91,13 @@ class ImagesAPI:
         if tags is not None and len(tags) > 0:
             params["t"] = tags[0]
 
-        raw = self._transport.stream("POST", "/build", **params)
+        raw = self._transport.stream(
+            "POST",
+            "/build",
+            data=buf,
+            headers={"Content-Type": "application/x-tar"},
+            **params,
+        )
         async for item in json_stream(raw):
             yield BuildOutput(
                 stream=item.get("stream", ""),
