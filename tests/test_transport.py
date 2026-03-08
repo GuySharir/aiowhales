@@ -2,21 +2,21 @@
 
 import pytest
 
-from aiowhales.transport import (
-    AbstractTransport,
-    UnixSocketTransport,
-    TCPTransport,
-    _not_found_exception,
-    _versioned,
-)
 from aiowhales.exceptions import (
     ContainerNotFound,
+    DockerAPIError,
     ImageNotFound,
     NetworkNotFound,
     VolumeNotFound,
-    DockerAPIError,
 )
 from aiowhales.testing import MockTransport
+from aiowhales.transport import (
+    AbstractTransport,
+    TCPTransport,
+    UnixSocketTransport,
+    _not_found_exception,
+    _versioned,
+)
 
 
 class TestVersionedPath:

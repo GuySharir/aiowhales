@@ -48,8 +48,8 @@ class ContainersAPI:
         host_config: dict[str, Any] = {}
         if "ports" in kwargs:
             ports = kwargs.pop("ports")
-            exposed = {}
-            port_bindings = {}
+            exposed: dict[str, dict[str, Any]] = {}
+            port_bindings: dict[str, list[dict[str, str]]] = {}
             for container_port, host_port in ports.items():
                 port_str = str(container_port)
                 key = f"{container_port}/tcp" if "/" not in port_str else port_str
@@ -130,7 +130,7 @@ class ContainersAPI:
 
     async def wait(self, id: str) -> int:
         data = await self._transport.post(f"/containers/{id}/wait")
-        return data.get("StatusCode", -1)
+        return int(data.get("StatusCode", -1))
 
     async def stats(self, id: str) -> ContainerStats:
         data = await self._transport.get(f"/containers/{id}/stats", stream="false")

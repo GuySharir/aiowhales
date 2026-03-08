@@ -149,8 +149,8 @@ class ComposeAPI:
             await proc.wait()
         else:
             output = await self._run(project_dir, *args)
-            for line in output.splitlines():
-                yield line
+            for text_line in output.splitlines():
+                yield text_line
 
     async def build(self, project_dir: str, **kwargs: Any) -> None:
         args = ["build"]
