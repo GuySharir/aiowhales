@@ -95,7 +95,7 @@ class TestNetworksConnect:
     async def test_connect_with_aliases(self, api):
         networks_api, transport = api
         transport.register("POST", "/networks/net456/connect", {})
-        await networks_api.connect("net456", "container123", alias1="web")
+        await networks_api.connect("net456", "container123", aliases=["web"])
 
 
 class TestNetworksDisconnect:

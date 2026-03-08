@@ -38,10 +38,15 @@ class NetworksAPI:
     async def remove(self, id: str) -> None:
         await self._transport.delete(f"/networks/{id}")
 
-    async def connect(self, network_id: str, container_id: str, **aliases: Any) -> None:
+    async def connect(
+        self,
+        network_id: str,
+        container_id: str,
+        aliases: list[str] | None = None,  # type: ignore[valid-type]
+    ) -> None:
         body: dict[str, Any] = {"Container": container_id}
         if aliases:
-            body["EndpointConfig"] = {"Aliases": list(aliases.values())}
+            body["EndpointConfig"] = {"Aliases": aliases}
         await self._transport.post(f"/networks/{network_id}/connect", body)
 
     async def disconnect(self, network_id: str, container_id: str) -> None:

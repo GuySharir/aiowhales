@@ -77,8 +77,13 @@ class ComposeAPI:
             stderr=asyncio.subprocess.STDOUT,
         )
         assert proc.stdout is not None
-        async for line in proc.stdout:
-            yield line.decode("utf-8", errors="replace").rstrip("\n")
+        try:
+            async for line in proc.stdout:
+                yield line.decode("utf-8", errors="replace").rstrip("\n")
+        finally:
+            if proc.returncode is None:
+                proc.kill()
+                await proc.wait()
         returncode = await proc.wait()
         if returncode != 0:
             raise ComposeError(returncode, "docker compose up failed")
@@ -144,9 +149,15 @@ class ComposeAPI:
                 stderr=asyncio.subprocess.STDOUT,
             )
             assert proc.stdout is not None
-            async for line in proc.stdout:
-                yield line.decode("utf-8", errors="replace").rstrip("\n")
-            await proc.wait()
+            try:
+                async for line in proc.stdout:
+                    yield line.decode("utf-8", errors="replace").rstrip("\n")
+            finally:
+                if proc.returncode is None:
+                    proc.kill()
+                    await proc.wait()
+                else:
+                    await proc.wait()
         else:
             output = await self._run(project_dir, *args)
             for text_line in output.splitlines():

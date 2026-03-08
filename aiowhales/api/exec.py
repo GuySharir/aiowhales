@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -61,6 +62,12 @@ class ExecAPI:
     async def stream(self, container_id: str, cmd: list[str], **kwargs: Any) -> AsyncIterator[str]:
         """Create and start an exec, streaming output line by line."""
         exec_id = await self.create(container_id, cmd, **kwargs)
-        raw = self._transport.stream("POST", f"/exec/{exec_id}/start")
+        body = json.dumps({"Detach": False, "Tty": False}).encode()
+        raw = self._transport.stream(
+            "POST",
+            f"/exec/{exec_id}/start",
+            data=body,
+            headers={"Content-Type": "application/json"},
+        )
         async for line in decode_stream(raw):
             yield line

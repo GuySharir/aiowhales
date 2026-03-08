@@ -168,7 +168,11 @@ class TestImageParsing:
 
     def test_short_id(self):
         img = _parse_image({"Id": "sha256:abcdef1234567890", "Size": 0, "Created": 0})
-        assert img.short_id == "sha256:abcde"
+        assert img.short_id == "abcdef123456"
+
+    def test_short_id_no_prefix(self):
+        img = _parse_image({"Id": "abcdef1234567890", "Size": 0, "Created": 0})
+        assert img.short_id == "abcdef123456"
 
     def test_parse_created_timestamp(self):
         img = _parse_image(IMAGE_LIST_FIXTURE[0])

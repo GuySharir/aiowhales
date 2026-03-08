@@ -87,3 +87,38 @@ class TestExecRun:
         assert "/containers/abc/exec" in paths
         assert "/exec/exec789/start" in paths
         assert "/exec/exec789/json" in paths
+
+
+class TestExecStream:
+    @pytest.mark.asyncio
+    async def test_stream_yields_lines(self, api):
+        exec_api, transport = api
+        transport.register("POST", "/containers/abc/exec", {"Id": "exec123"})
+        transport.register_stream(
+            "POST",
+            "/exec/exec123/start",
+            [
+                b"line one\n",
+                b"line two\n",
+            ],
+        )
+        lines = [line async for line in exec_api.stream("abc", ["tail", "-f", "/log"])]
+        assert lines == ["line one", "line two"]
+
+    @pytest.mark.asyncio
+    async def test_stream_empty(self, api):
+        exec_api, transport = api
+        transport.register("POST", "/containers/abc/exec", {"Id": "exec456"})
+        transport.register_stream("POST", "/exec/exec456/start", [])
+        lines = [line async for line in exec_api.stream("abc", ["echo"])]
+        assert lines == []
+
+    @pytest.mark.asyncio
+    async def test_stream_calls_create_then_start(self, api):
+        exec_api, transport = api
+        transport.register("POST", "/containers/abc/exec", {"Id": "exec789"})
+        transport.register_stream("POST", "/exec/exec789/start", [])
+        _ = [line async for line in exec_api.stream("abc", ["ls"])]
+        paths = [call[1] for call in transport.calls]
+        assert paths[0] == "/containers/abc/exec"
+        assert paths[1] == "/exec/exec789/start"
