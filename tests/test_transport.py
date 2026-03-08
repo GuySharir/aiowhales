@@ -1,5 +1,7 @@
 """Tests for transport layer — error mapping, protocol compliance."""
 
+import sys
+
 import pytest
 
 from aiowhales.exceptions import (
@@ -63,6 +65,7 @@ class TestAbstractTransportProtocol:
         assert isinstance(transport, AbstractTransport)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not available")
 class TestUnixSocketTransport:
     @pytest.mark.asyncio
     async def test_default_socket_path(self):

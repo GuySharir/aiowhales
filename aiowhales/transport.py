@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from collections.abc import AsyncIterator
 from typing import Any, Protocol, runtime_checkable
 
@@ -166,9 +167,14 @@ class _BaseHTTPTransport:
 
 
 class UnixSocketTransport(_BaseHTTPTransport):
-    """Transport over a Unix domain socket."""
+    """Transport over a Unix domain socket (Linux / macOS only)."""
 
     def __init__(self, socket_path: str = "/var/run/docker.sock") -> None:
+        if sys.platform == "win32":
+            raise OSError(
+                "Unix sockets are not supported on Windows. "
+                "Use TCPTransport or set DOCKER_HOST to a tcp:// URL."
+            )
         self.socket_path = socket_path
         connector = aiohttp.UnixConnector(path=socket_path)
         self._session = aiohttp.ClientSession(

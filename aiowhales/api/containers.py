@@ -100,8 +100,8 @@ class ContainersAPI:
 
         if not detach:
             await self.wait(container.id)
-            container = await self.get(container.id)
 
+        container = await self.get(container.id)
         return _RunContextContainer(container, self, remove_on_exit)
 
     async def start(self, id: str) -> None:

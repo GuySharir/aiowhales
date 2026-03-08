@@ -16,14 +16,23 @@ jobs:
       - run: uv run ruff format --check .
 
   test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv run --python ${{ matrix.python-version }} pytest --tb=short -q --cov --cov-report=term-missing
+      - run: uv run --python ${{ matrix.python-version }} pytest -m "not integration" --tb=short -q --cov --cov-report=term-missing
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: docker pull alpine:latest
+      - run: uv run pytest -m integration --tb=short -q
 
   typecheck:
     runs-on: ubuntu-latest
