@@ -11,7 +11,7 @@
 If you discover a security vulnerability in aiowhales, please report it
 responsibly. **Do not open a public issue.**
 
-1. Email **guy@guysharir.com** with a description of the vulnerability
+1. Use [GitHub's private vulnerability reporting](https://github.com/GuySharir/aiowhales/security/advisories/new) to submit a report
 2. Include steps to reproduce the issue if possible
 3. Allow reasonable time for a fix before public disclosure
 
